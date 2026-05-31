@@ -58,8 +58,15 @@ def _send_to_sarvam(piece_path: str, translate: bool = False) -> str:
         try:
             with open(piece_path, "rb") as f:
                 files = {"file": (os.path.basename(piece_path), f, "audio/wav")}
-                data = {"model": SARVAM_MODEL, "with_diarization": "false"}
-                if "v3" in SARVAM_MODEL.lower():
+                # Dynamically choose a compatible model based on the endpoint requirements
+                model_to_use = SARVAM_MODEL
+                if not translate:
+                    allowed_standard_models = ["saarika:v2.5", "saaras:v3", "saaras:v3-realtime", "saarika:v1", "saarika:v2", "saarika:flash"]
+                    if model_to_use not in allowed_standard_models:
+                        model_to_use = "saarika:v2.5"  # Fallback to standard compatible model
+
+                data = {"model": model_to_use, "with_diarization": "false"}
+                if "v3" in model_to_use.lower():
                     data["mode"] = "translate" if translate else "codemix"
 
                 response = requests.post(
