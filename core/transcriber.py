@@ -8,12 +8,12 @@ from pydub import AudioSegment
 SARVAM_PIECE_SECONDS = 25
 
 
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "small")
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "small").strip()
 
 
-SARVAM_API_KEY = os.getenv("SARVAM_API_KEY")
+SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "").strip() or None
 SARVAM_STT_TRANSLATE_URL = "https://api.sarvam.ai/speech-to-text-translate"
-SARVAM_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v2.5")
+SARVAM_MODEL = os.getenv("SARVAM_STT_MODEL", "saaras:v2.5").strip()
 
 _model = None
 
@@ -24,7 +24,17 @@ def load_model():
 
     if _model is None: 
         print(f"Loading Whisper model: {WHISPER_MODEL} ...")
-        _model = whisper.load_model(WHISPER_MODEL) 
+        try:
+            _model = whisper.load_model(WHISPER_MODEL) 
+        except Exception as e:
+            err_msg = str(e).lower()
+            if "connection" in err_msg or "disconnected" in err_msg or "timeout" in err_msg or "urllib" in err_msg:
+                raise RuntimeError(
+                    f"Failed to download/load Whisper model '{WHISPER_MODEL}' due to a network connection error. "
+                    f"On the first run, Whisper must download this model (~140MB for 'base', ~460MB for 'small') from OpenAI's servers. "
+                    f"Please verify your internet connection, check if a firewall/proxy is blocking 'openaipublic.azureedge.net', and try again."
+                ) from e
+            raise e
         print("Whisper model loaded.")
     return _model 
 
