@@ -99,7 +99,7 @@ export default function AnalyzePage() {
           />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 20 }}>
           <button
             className={`clay-pill ${language === 'english' ? 'active' : ''}`}
             onClick={() => setLanguage('english')}
@@ -109,8 +109,16 @@ export default function AnalyzePage() {
           <button
             className={`clay-pill ${language === 'hinglish' ? 'active' : ''}`}
             onClick={() => setLanguage('hinglish')}
+            title="Transcribes Hindi/English speech verbatim in Hinglish script"
           >
-            🇮🇳 Hinglish
+            🇮🇳 Hinglish (Verbatim)
+          </button>
+          <button
+            className={`clay-pill ${language === 'hinglish_translated' ? 'active' : ''}`}
+            onClick={() => setLanguage('hinglish_translated')}
+            title="Transcribes Hindi/English speech and translates it directly into English text"
+          >
+            🔀 Hinglish (Translated to English)
           </button>
         </div>
 
