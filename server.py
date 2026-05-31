@@ -192,3 +192,18 @@ async def chat(req: ChatRequest):
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/")
+async def root():
+    return {
+        "message": "AI Video Assistant API is running! Access the frontend dashboard at http://localhost:5173",
+        "frontend_url": "http://localhost:5173",
+        "endpoints": {
+            "health": "/health",
+            "analyze": "/analyze [POST]",
+            "status": "/status/{job_id} [GET]",
+            "results": "/results/{job_id} [GET]",
+            "chat": "/chat [POST]"
+        }
+    }
