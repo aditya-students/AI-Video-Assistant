@@ -87,7 +87,16 @@ Context from meeting transcript:
     return rag_chain
 
 def ask_question(rag_chain, question:str) ->str:
-    print(f"Question : {question}")
+    try:
+        print(f"Question : {question}")
+    except UnicodeEncodeError:
+        print(f"Question : {question.encode('ascii', errors='replace').decode('ascii')}")
+        
     answer = rag_chain.invoke(question)
-    print(f"answer : {answer}")
+    
+    try:
+        print(f"answer : {answer}")
+    except UnicodeEncodeError:
+        print(f"answer : {answer.encode('ascii', errors='replace').decode('ascii')}")
+        
     return answer
