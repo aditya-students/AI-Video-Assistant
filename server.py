@@ -2,8 +2,8 @@
 FastAPI backend for AI Video Assistant.
 Wraps the existing pipeline (main.py) with REST endpoints.
 """
-
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+import os
+from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -137,6 +137,43 @@ async def analyze(req: AnalyzeRequest):
     thread.start()
 
     return {"job_id": job_id}
+
+
+@app.post("/analyze-file")
+async def analyze_file(file: UploadFile = File(...), language: str = Form("english")):
+    """Start a new video analysis job from an uploaded file."""
+    job_id = str(uuid.uuid4())[:8]
+
+    # Save the file to the downloades directory
+    os.makedirs("downloades", exist_ok=True)
+    file_path = os.path.join("downloades", f"{job_id}_{file.filename}")
+    
+    try:
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save uploaded file: {e}")
+
+    jobs[job_id] = {
+        "status": "running",
+        "step": 0,
+        "step_name": PIPELINE_STEPS[0],
+        "total": len(PIPELINE_STEPS),
+        "results": None,
+        "rag_chain": None,
+        "error": None,
+    }
+
+    # Run pipeline in background thread with saved file path
+    thread = threading.Thread(
+        target=run_pipeline_worker,
+        args=(job_id, file_path, language),
+        daemon=True,
+    )
+    thread.start()
+
+    return {"job_id": job_id}
+
 
 
 @app.get("/status/{job_id}")

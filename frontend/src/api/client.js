@@ -10,6 +10,17 @@ const api = axios.create({
 export const analyzeVideo = (source, language) =>
   api.post('/analyze', { source, language });
 
+export const analyzeFile = (file, language) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('language', language);
+  return api.post('/analyze-file', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export const getStatus = (jobId) =>
   api.get(`/status/${jobId}`);
 

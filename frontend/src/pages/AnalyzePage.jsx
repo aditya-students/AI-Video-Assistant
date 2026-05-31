@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useSession } from '../context/SessionContext';
-import { analyzeVideo } from '../api/client';
+import { analyzeVideo, analyzeFile } from '../api/client';
 import PipelineProgress from '../components/PipelineProgress';
 
 const ACCEPTED = '.mp4,.mp3,.wav,.m4a,.webm,.ogg';
@@ -22,8 +22,15 @@ export default function AnalyzePage() {
     update({ status: 'running', currentStep: 0, stepName: '', language, errorMessage: '' });
 
     try {
-      const { data } = await analyzeVideo(source, language);
-      update({ jobId: data.job_id });
+      let res;
+      if (file) {
+        // Upload the actual file content to the backend
+        res = await analyzeFile(file, language);
+      } else {
+        // Submit YouTube URL
+        res = await analyzeVideo(url, language);
+      }
+      update({ jobId: res.data.job_id });
     } catch (err) {
       update({
         status: 'error',
